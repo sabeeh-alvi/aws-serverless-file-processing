@@ -1,6 +1,8 @@
 
-import os
 import logging
+import os
+from urllib.parse import unquote_plus
+
 import boto3
 
 logger = logging.getLogger()
@@ -9,11 +11,13 @@ logger.setLevel(logging.INFO)
 s3 = boto3.client("s3")
 sns = boto3.client("sns")
 
-SNS_TOPIC_ARN = os.environ["SNS_TOPIC_ARN"]
-
 
 def lambda_handler(event, context):
-    """Count words in an S3 text file and publish the result to SNS."""
+    """Count words in S3 text files and publish results to SNS."""
+
+    topic_arn = os.environ.get("SNS_TOPIC_ARN")
+    if not topic_arn:
+        raise ValueError("Missing SNS_TOPIC_ARN environment variable")
 
     records = event.get("Records", [])
     if not records:
@@ -22,29 +26,41 @@ def lambda_handler(event, context):
     results = []
 
     for record in records:
-        bucket = record["s3"]["bucket"]["name"]
-        key = record["s3"]["object"]["key"]
+        try:
+            bucket = record["s3"]["bucket"]["name"]
+            encoded_key = record["s3"]["object"]["key"]
+        except (KeyError, TypeError) as exc:
+            raise ValueError("Invalid S3 event record") from exc
+
+        key = unquote_plus(encoded_key)
+
+        logger.info("Processing s3://%s/%s", bucket, key)
 
         response = s3.get_object(Bucket=bucket, Key=key)
-        content = response["Body"].read().decode("utf-8")
+        body = response["Body"]
+
+        try:
+            content = body.read().decode("utf-8")
+        finally:
+            body.close()
 
         word_count = len(content.split())
 
         message = (
-            f"File processing completed.\n"
+            "File processing completed.\n"
             f"Bucket: {bucket}\n"
             f"File: {key}\n"
             f"Word count: {word_count}"
         )
 
         sns.publish(
-            TopicArn=SNS_TOPIC_ARN,
+            TopicArn=topic_arn,
             Subject="S3 File Word Count",
             Message=message,
         )
 
         logger.info(
-            "Processed s3://%s/%s; word_count=%d",
+            "Word count completed for s3://%s/%s: %d",
             bucket,
             key,
             word_count,
