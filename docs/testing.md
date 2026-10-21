@@ -61,3 +61,26 @@ Record the date, test input, expected result, actual result, and pass/fail statu
 ## Limitations
 
 The current function counts whitespace-separated tokens using Python's `split()` method. This is a simple word-count definition; it does not attempt linguistic tokenization or special handling of punctuation.
+
+## Automated Unit Test Results
+
+**Status: Passed**
+
+The Python unit tests were executed successfully using GitHub Actions.
+
+- **Test framework:** Python `unittest`
+- **Python version:** 3.12, as configured in the GitHub Actions workflow
+- **Command:** `python -m unittest discover -s tests -p "test_*.py" -v`
+- **Tests executed:** 6
+- **Result:** All 6 tests passed
+
+### Scenarios Verified
+
+- Normal text
+- Empty input
+- Multiple spaces
+- Multiple lines
+- Whitespace-only input
+- Punctuation
+
+These tests verify the shared word-count function in `src/word_count.py`. They do not establish that the Lambda function, S3 event trigger, SNS notification, or other AWS integrations have been tested end to end.
