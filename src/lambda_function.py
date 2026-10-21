@@ -1,4 +1,4 @@
-
+from src.word_count import count_words
 import logging
 import os
 from urllib.parse import unquote_plus
@@ -44,7 +44,7 @@ def lambda_handler(event, context):
         finally:
             body.close()
 
-        word_count = len(content.split())
+        word_count = count_words(content)
 
         message = (
             "File processing completed.\n"
