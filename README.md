@@ -69,15 +69,30 @@ Record actual test results in `docs/testing.md` after running the tests.
 
 ```text
 aws-serverless-file-processing/
-├── README.md
 ├── src/
-│   └── lambda_function.py
+│   ├── lambda_function.py
+│   ├── word_count.py
+│   └── README.md
+├── tests/
+│   ├── test_word_count.py
+│   └── README.md
 └── docs/
     ├── architecture.md
     ├── iam-permissions.md
     ├── testing.md
     └── troubleshooting.md
 ```
+
+### Code and Documentation
+
+- **`src/`** — Lambda handler and reusable word-count logic.
+- **`tests/`** — Unit-test cases and instructions for running them.
+- **`docs/architecture.md`** — Application architecture and event flow.
+- **`docs/iam-permissions.md`** — IAM permissions and security considerations.
+- **`docs/testing.md`** — Testing approach and validation plan.
+- **`docs/troubleshooting.md`** — Common issues and troubleshooting guidance.
+
+The repository documents the intended design and implementation. AWS deployment and integration results should be recorded only after they have been verified.
 
 ## Learning Outcomes
 
