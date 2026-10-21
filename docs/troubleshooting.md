@@ -101,6 +101,54 @@ For each incident, document:
 
 Do not include credentials, secrets, or sensitive file contents in the report.
 
+## Additional Checks for the Revised Function
+
+### Filenames Containing Spaces or Special Characters
+
+The function decodes URL-encoded S3 object keys using `unquote_plus()` before requesting the object.
+
+**Checks**
+1. Upload a text file whose name contains a space.
+2. Confirm that the Lambda function reads the intended object.
+3. Verify that the decoded filename is recorded in the logs.
+
+### Missing SNS Topic Configuration
+
+The function checks for the `SNS_TOPIC_ARN` environment variable before processing records.
+
+**Checks**
+1. Verify that the environment variable exists in the Lambda configuration.
+2. Confirm that its value is the ARN of the intended SNS topic.
+3. Check CloudWatch logs if the function raises a configuration error.
+
+### Invalid Event Records
+
+The function checks for the expected S3 bucket and object key fields.
+
+**Checks**
+1. Inspect the event structure supplied to the function.
+2. Confirm that the invocation uses a compatible S3 object-created event.
+3. Review the error message for malformed records.
+
+### Duplicate Event Processing
+
+The revised function does not implement idempotency. A repeated event may result in the same file being processed again and another SNS notification being sent.
+
+For a production design, consider an idempotency mechanism using a durable record keyed to the object and event identity. Define how retries and partially completed processing should behave before implementing it.
+
+### Invalid Text Encoding
+
+The function decodes object contents as UTF-8. Files containing invalid UTF-8 sequences will raise a decoding error.
+
+**Checks**
+1. Confirm that the uploaded file uses UTF-8 encoding.
+2. Review CloudWatch logs for decoding failures.
+3. Decide whether the application should reject invalid files or explicitly support additional encodings.
+
+## Revised Code Status
+
+The source code has been updated in GitHub. These improvements have not yet been verified through an AWS Lambda execution.
+
 ## Verification Status
 
 This guide documents diagnostic procedures. It does not claim that these failures have been reproduced or that the application has been deployed successfully.
